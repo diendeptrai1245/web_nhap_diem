@@ -1,2 +1,2 @@
 # web_nhap_diem
-<!-- xin chào tôi là điển -->
+xin chào mọi người. Mình mới học dùng github
