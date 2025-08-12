@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điểm</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Bảng điểm sinh viên</h2>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Mã môn học</th>
+            <th>Tên môn học</th>
+            <th>Điểm chuyên cần</th>
+            <th>Điểm giữa kì</th>
+            <th>Điểm cuối kì</th>
+            <th>Điểm tổng kết</th>
+        </tr>
+        {% for score in scores %}
+        <tr>
+            <td>{{ score.subject.subject_id }}</td>
+            <td>{{ score.subject.subject_name }}</td>
+            <td>{{ score.attendance }}</td>
+            <td>{{ score.midterm }}</td>
+            <td>{{ score.final_exam }}</td>
+            <td>{{ score.overall }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

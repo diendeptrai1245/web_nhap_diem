@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Nhập điểm học sinh</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="score-container">
+        <h2>Welcome, {{ username }}</h2>
+        <h3>Input Student Information</h3>
+        <form>
+            <input type="text" name="student_name" placeholder="Fullname" required>
+            <input type="text" name="student_id" placeholder="StudentID" required>
+            <button type="submit">Truy cập</button>
+            {% comment %} <input type="float" placeholder="Attendance" min="0" max="20" required>
+            <input type="float" placeholder="Midterm" min="0" max="20" required>
+            <input type="float" placeholder="FinalExam" min="0" max="20" required>
+            <input type="float" placeholder="Overall" min="0" max="20" required> {% endcomment %}
+        </form>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Đăng xuất</a>
+    </div>
+</body>
+</html>
