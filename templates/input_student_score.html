@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tìm kiếm sinh viên</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .search-bar { margin-bottom: 20px; }
+        input, button { padding: 8px; font-size: 14px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+        td[contenteditable="true"] { background-color: #f9f9f9; }
+        .btn-save { padding: 10px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        .btn-save:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+
+    <h2>Tra cứu và chỉnh sửa bảng điểm</h2>
+    <div class="search-bar">
+        <input type="text" id="student_id" placeholder="Nhập Mã sinh viên">
+        <button onclick="searchStudent()">Tìm kiếm</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function searchStudent() {
+            let student_id = document.getElementById("student_id").value;
+            fetch("/search_student", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "student_id=" + encodeURIComponent(student_id)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "found") {
+                    let html = `<h3>Mã SV: ${data.id} - Tên: ${data.student.name}</h3>`;
+                    html += `<table><tr>
+                                <th>Môn học</th>
+                                <th>Attendance</th>
+                                <th>Midterm</th>
+                                <th>Final Exam</th>
+                                <th>Overall</th>
+                            </tr>`;
+                    data.student.scores.forEach((score, index) => {
+                        html += `<tr>
+                                    <td>${score.subject}</td>
+                                    <td contenteditable="true">${score.attendance}</td>
+                                    <td contenteditable="true">${score.midterm}</td>
+                                    <td contenteditable="true">${score.final}</td>
+                                    <td contenteditable="true">${score.overall}</td>
+                                </tr>`;
+                    });
+                    html += `</table><button class="btn-save" onclick="saveScores('${data.id}')">Lưu</button>`;
+                    document.getElementById("result").innerHTML = html;
+                } else {
+                    document.getElementById("result").innerHTML = "<p>Không tìm thấy sinh viên!</p>";
+                }
+            });
+        }
+
+        function saveScores(student_id) {
+            let rows = document.querySelectorAll("#result table tr");
+            let scores = [];
+            for (let i = 1; i < rows.length; i++) {
+                let cells = rows[i].querySelectorAll("td");
+                scores.push({
+                    subject: cells[0].innerText,
+                    attendance: parseFloat(cells[1].innerText),
+                    midterm: parseFloat(cells[2].innerText),
+                    final: parseFloat(cells[3].innerText),
+                    overall: parseFloat(cells[4].innerText)
+                });
+            }
+
+            fetch("/update_score", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ student_id, scores })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("Cập nhật thành công!");
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

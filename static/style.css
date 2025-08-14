@@ -13,7 +13,7 @@ body {
     justify-content: center;
 }
 
-.login-container, .score-container {
+.login-container, .score-container, .register-container, .function-container {
     width: 350px;
     padding: 30px;
     background: white;
@@ -23,14 +23,18 @@ body {
     text-align: center;
 }
 
-.register-container {
-    width: 350px;
-    padding: 30px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    animation: fadeIn 0.8s ease-in-out;
-    text-align: center;
+.register-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background: #2980b9;
+    color: white;
+    font-size: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
 }
 
 .logo {

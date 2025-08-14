@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
 import os
@@ -18,10 +18,8 @@ db_name = os.getenv("DB_NAME")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-
-
+# db = SQLAlchemy(app)
+db.init_app(app)
 
 app.secret_key = os.getenv('API_TOKEN')  # Bảo mật session
 app.permanent_session_lifetime = timedelta(minutes=30)
@@ -30,35 +28,72 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 # SIGN IN
 @app.route("/", methods=["GET", "POST"])
 def login():
+    message = request.args.get("message")
     if request.method == "POST":
         userID = request.form["user_email"]
         password = request.form["password"]
-
-        user = User.query.filter_by(user_email=userID).First()
         
-        if user and User.user_password == password:
-            session["username"] = user.user_email
+        # Kiểm tra trống
+        if not userID or not password:
+            return render_template("login.html", error="Please input both email and password")
+
+        user = User.query.filter_by(user_email=userID).first()
+        
+        if user and user.user_password == password:
+            session["username"] = user.user_fullname
         
             return redirect(url_for("score"))
         else:
-            return render_template("login.html", error="Sai tài khoản hoặc mật khẩu!")
+            return render_template("login.html", error="Wrong email or password!")
 
     return render_template("login.html")
 
-#SCORE
-@app.route("/score")
-def score():
-    if "username" in session:
-        return render_template("score.html", username=session["username"])
-    return redirect(url_for("login"))
+# SIGN UP FUNCTON
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        fullname = request.form["fullname"]
+        email = request.form["email"]
+        password = request.form["password"]
+        phonenumber = request.form["phone_number"]
+        
+        account = User.query.filter_by(user_email=email).first()
+        if account and account.user_email:
+            return render_template("register.html", error="Email existed!")
 
-#LOG OUT
+        #Create new account
+        new_user = User(
+            user_fullname = fullname,
+            user_email = email,
+            user_password = password,
+            user_phonenumber = phonenumber
+        )
+        
+        #Save in database
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash("Account created successfully!", "success")
+        return redirect(url_for("login"))  
+    
+    return render_template("register.html")
+  
+@app.route("/search_student", methods=["POST"])
+def search_student():
+    student_id = request.form["student_id"].strip()
+    student = students_scores.get(student_id)
+    if student:
+        return jsonify({"status": "found", "student": student, "id": student_id})
+    else:
+        return jsonify({"status": "not_found"})
+    
+# LOG OUT
 @app.route("/logout")
 def logout():
     session.pop("username", None)
     return redirect(url_for("login"))
 
-#STUDENT SCORE
+# STUDENT SCORE
 @app.route("/student_score")
 def student_score():
     if request.method == "POST":
@@ -72,13 +107,6 @@ def student_score():
     
     return render_template("score.html")
 
-#SIGN UP
-@app.route("/register")
-def register():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-        # if email = 
 
 if __name__ == "__main__":
     app.run(port=os.getenv("SV_PORT"),debug=True)
