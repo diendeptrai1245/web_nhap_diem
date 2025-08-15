@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập - Quản lý điểm</title>
+    <title>Finding Student</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="login-container">
+    <div class="find-student-container">
         <img src="{{ url_for('static', filename='USTH_LOGO.png') }}" alt="Logo" class="logo">
-        <h2>Welcome</h2>
+        <h2>Welcome, {{ username }}</h2>
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
@@ -20,16 +20,14 @@
             {% endif %}
         {% endwith %}
         <form method="POST">
-            <input type="text" name="user_email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Sign in</button>
+            <input type="text" name="student_id" placeholder="Student ID" required>
+            <button type="submit">Search</button>
         </form>
-
-        <form action="{{ url_for('register') }}" method="GET">
-            <button type="submit">Create an account</button>
+        <form action="{{ url_for('function') }}" method="GET">
+            <button type="submit">Back to home</button>
         </form>
-        <form>
-            <button type="submit">Forgot your password</button>
+        <form action="{{ url_for('login') }}" method="GET">
+            <button type="submit">Sign out</button>
         </form>
     </div>
 </body>

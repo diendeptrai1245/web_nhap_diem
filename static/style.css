@@ -13,7 +13,7 @@ body {
     justify-content: center;
 }
 
-.login-container, .score-container, .register-container, .function-container {
+.login-container, .score-container, .register-container, .function-container, .find-student-container {
     width: 350px;
     padding: 30px;
     background: white;

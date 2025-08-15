@@ -1,95 +1,98 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Tìm kiếm sinh viên</title>
+    <title>Input Student Score</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .search-bar { margin-bottom: 20px; }
-        input, button { padding: 8px; font-size: 14px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #4CAF50; color: white; }
-        td[contenteditable="true"] { background-color: #f9f9f9; }
-        .btn-save { padding: 10px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; }
-        .btn-save:hover { background: #45a049; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .student-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f2f2f2;
+            border-radius: 5px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background: #f4f4f4;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 5px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Tra cứu và chỉnh sửa bảng điểm</h2>
-    <div class="search-bar">
-        <input type="text" id="student_id" placeholder="Nhập Mã sinh viên">
-        <button onclick="searchStudent()">Tìm kiếm</button>
+    <h2>Enter Scores for Student</h2>
+
+    <div class="student-info">
+        <p><strong>Student ID:</strong> {{ student_id }}</p>
+        <p><strong>Student Name:</strong> {{ student_name }}</p>
     </div>
 
-    <div id="result"></div>
+    <form action="{{ url_for('login') }}" method="POST">
+        <!-- Gửi kèm mã sinh viên -->
+        <input type="hidden" name="student_id" value="{{ student_id }}">
 
-    <script>
-        function searchStudent() {
-            let student_id = document.getElementById("student_id").value;
-            fetch("/search_student", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "student_id=" + encodeURIComponent(student_id)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "found") {
-                    let html = `<h3>Mã SV: ${data.id} - Tên: ${data.student.name}</h3>`;
-                    html += `<table><tr>
-                                <th>Môn học</th>
-                                <th>Attendance</th>
-                                <th>Midterm</th>
-                                <th>Final Exam</th>
-                                <th>Overall</th>
-                            </tr>`;
-                    data.student.scores.forEach((score, index) => {
-                        html += `<tr>
-                                    <td>${score.subject}</td>
-                                    <td contenteditable="true">${score.attendance}</td>
-                                    <td contenteditable="true">${score.midterm}</td>
-                                    <td contenteditable="true">${score.final}</td>
-                                    <td contenteditable="true">${score.overall}</td>
-                                </tr>`;
-                    });
-                    html += `</table><button class="btn-save" onclick="saveScores('${data.id}')">Lưu</button>`;
-                    document.getElementById("result").innerHTML = html;
-                } else {
-                    document.getElementById("result").innerHTML = "<p>Không tìm thấy sinh viên!</p>";
-                }
-            });
-        }
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject ID</th>
+                    <th>Subject Name</th>
+                    <th>Attendance</th>
+                    <th>Midterm</th>
+                    <th>Final Exam</th>
+                    <th>Overall</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr>
+                    <td>{{ subject.subject_id }}</td>
+                    <td>{{ subject.subject_name }}</td>
+                    <td><input type="number" name="attendance_{{ subject.subject_id }}" step="0.01" required></td>
+                    <td><input type="number" name="midterm_{{ subject.subject_id }}" step="0.01" required></td>
+                    <td><input type="number" name="final_exam_{{ subject.subject_id }}" step="0.01" required></td>
+                    <td><input type="number" name="overall_{{ subject.subject_id }}" step="0.01" required></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        function saveScores(student_id) {
-            let rows = document.querySelectorAll("#result table tr");
-            let scores = [];
-            for (let i = 1; i < rows.length; i++) {
-                let cells = rows[i].querySelectorAll("td");
-                scores.push({
-                    subject: cells[0].innerText,
-                    attendance: parseFloat(cells[1].innerText),
-                    midterm: parseFloat(cells[2].innerText),
-                    final: parseFloat(cells[3].innerText),
-                    overall: parseFloat(cells[4].innerText)
-                });
-            }
+        <button type="submit">Save</button>
+        <button type="submit">Dont save</button>
+        <button type="submit">Back to home</button>
 
-            fetch("/update_score", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ student_id, scores })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    alert("Cập nhật thành công!");
-                } else {
-                    alert("Lỗi: " + data.message);
-                }
-            });
-        }
-    </script>
+    </form>
 
 </body>
 </html>
